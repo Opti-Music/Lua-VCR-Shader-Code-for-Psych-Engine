@@ -1,0 +1,34 @@
+local shaderName = "vcrGlitch"
+
+function onCreatePost()
+    -- Check if the engine supports shaders (prevents crashes on older/potato PCs)
+    if shadersEnabled then
+        -- Initialize the shader file
+        initLuaShader(shaderName)
+        
+        -- Apply the shader to the game camera and HUD camera
+        makeLuaSprite("gameShader")
+        makeLuaSprite("hudShader")
+        
+        setSpriteShader("gameShader", shaderName)
+        setSpriteShader("hudShader", shaderName)
+        
+        runHaxeCode([[
+            game.camGame.setFilters([new ShaderFilter(game.getLuaObject('gameShader').shader)]);
+            game.camHUD.setFilters([new ShaderFilter(game.getLuaObject('hudShader').shader)]);
+        ]])
+        
+        -- Set our custom GLSL variables
+        setShaderBool("gameShader", "glitchOn", true)
+        setShaderBool("hudShader", "glitchOn", true)
+    end
+end
+
+function onUpdate(elapsed)
+    if shadersEnabled then
+        -- Keep updating the time variable so the glitch moves dynamically
+        local osTime = os.clock()
+        setShaderFloat("gameShader", "iTime", osTime)
+        setShaderFloat("hudShader", "iTime", osTime)
+    end
+end
